@@ -84,4 +84,17 @@ public class Post {
     public void setUpdatedOn(LocalDateTime updatedOn) {
         this.updatedOn = updatedOn;
     }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", slug='" + slug + '\'' +
+                ", content='" + content + '\'' +
+                ", author='" + author + '\'' +
+                ", publishedOn=" + publishedOn +
+                ", updatedOn=" + updatedOn +
+                '}';
+    }
 }
