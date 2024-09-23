@@ -10,8 +10,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
-
 @SpringBootApplication
 public class SpringAuthJpaApplication {
 
@@ -20,10 +18,25 @@ public class SpringAuthJpaApplication {
     }
 
     @Bean
-    CommandLineRunner commandLineRunner(PostRepository posts, UserRepository users, PasswordEncoder encoder) {
+    CommandLineRunner commandLineRunner(UserRepository users, PostRepository posts, PasswordEncoder encoder) {
         return args -> {
-            users.save(new User("user", encoder.encode("password"), "ROLE_USER"));
-            users.save(new User("admin", encoder.encode("password"), "ROLE_USER,ROLE_ADMIN"));
+            User admin = new User("admin", encoder.encode("password"),
+                    "FirstA", "LastA", "admin@bbb.ccc",
+                    true, false, false, false);
+            users.save(admin);
+            User user = new User("user", encoder.encode("password"),
+                    "FirstU", "LastU", "user@bbb.ccc",
+                    true, false, false, false);
+            users.save(user);
+
+            User user2 = new User("user2", encoder.encode("password"),
+                    "FirstU2", "LastU2", "user2@bbb.ccc",
+                    true, false, false, false);
+            users.save(user2);
+
+            users.delete(user);
+            users.save(user);
+
             posts.save(new Post("Hello, World", "hello-world", "Welcome to my blog!", "test0001"));
         };
 

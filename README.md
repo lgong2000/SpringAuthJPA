@@ -20,9 +20,12 @@ class SecurityConfig - @EnableMethodSecurity
 
 SecurityFilterChain - .userDetailsService(jpaUserDetailsService)
     - JpaUserDetailsService - UserDetails loadUserByUsername() - need a UserDetails to return
-        - userRepository.findByUsername(username) - return User
+        - userOldRepository.findByUsername(username) - return User
         - .map(SecurityUser::new) - SecurityUser implements UserDetails - return SecurityUser(UserDetails)
     - UserRepository - extends CrudRepository<User, Long>
 
 Use No Encoded Password
 SecurityConfig - @Bean - PasswordEncoder passwordEncoder() - return NoOpPasswordEncoder.getInstance()
+
+## Version 3
+Use user, group, group_members, group_authorities tables
