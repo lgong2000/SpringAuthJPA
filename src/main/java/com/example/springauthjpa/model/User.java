@@ -9,6 +9,53 @@ public class User {
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
 
+        private String password;
+
+        private String username;
+
+        private String firstname;
+
+        private String lastname;
+
+        private String email;
+
+        private boolean enabled;
+
+        private boolean accountexpired;
+
+        private boolean credentialsexpired;
+
+        private boolean accountlocked;
+
+        public User() {}
+
+        public User(String username, String password,
+                    String firstname, String lastname, String email) {
+                this(username, password, firstname, lastname, email, true, true, true,true);
+        }
+
+        public User(String username, String password,
+                    String firstname, String lastname, String email,
+                    boolean enabled, boolean accountexpired, boolean credentialsexpired, boolean accountlocked) {
+                this.username = username;
+                this.password = password;
+                this.firstname = firstname;
+                this.lastname = lastname;
+                this.email = email;
+                this.enabled = enabled;
+                this.accountexpired = accountexpired;
+                this.credentialsexpired = credentialsexpired;
+                this.accountlocked = accountlocked;
+        }
+
+        public Long getId() {
+                return id;
+        }
+
+        public void setId(Long id) {
+                this.id = id;
+        }
+
         public String getPassword() {
                 return password;
         }
@@ -81,42 +128,4 @@ public class User {
                 this.accountlocked = accountlocked;
         }
 
-        private String password;
-
-        private String username;
-
-        private String firstname;
-
-        private String lastname;
-
-        private String email;
-
-        private boolean enabled;
-
-        private boolean accountexpired;
-
-        private boolean credentialsexpired;
-
-        private boolean accountlocked;
-
-        public User() {}
-
-        public User(String username, String password,
-                    String firstname, String lastname, String email) {
-                this(username, password, firstname, lastname, email, true, true, true,true);
-        }
-
-        public User(String username, String password,
-                    String firstname, String lastname, String email,
-                    boolean enabled, boolean accountexpired, boolean credentialsexpired, boolean accountlocked) {
-                this.username = username;
-                this.password = password;
-                this.firstname = firstname;
-                this.lastname = lastname;
-                this.email = email;
-                this.enabled = enabled;
-                this.accountexpired = accountexpired;
-                this.credentialsexpired = credentialsexpired;
-                this.accountlocked = accountlocked;
-        }
 }

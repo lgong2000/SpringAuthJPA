@@ -15,4 +15,20 @@ public class GroupAuthority {
     private Long groupId;
 
     private String authority;
+
+    public GroupAuthority() {
+    }
+
+    public GroupAuthority(Long groupId, String authority) {
+        this.groupId = groupId;
+        this.authority = authority;
+    }
+
+    public String getAuthority() {
+        return authority;
+    }
+
+    public void setAuthority(String authority) {
+        this.authority = authority;
+    }
 }
