@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,30 +21,26 @@ import static org.springframework.security.config.Customizer.*;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final MyUserDetailsService myUserDetailsService;
+    @Bean
+    AuthenticationManager authenticationManager (PasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
 
-    public SecurityConfig(MyUserDetailsService myUserDetailsService) {
-        this.myUserDetailsService = myUserDetailsService;
+        ProviderManager providerManager = new ProviderManager(authenticationProvider);
+        return providerManager;
+
     }
-
-//    @Bean
-//    AuthenticationManager authenticationManager (PasswordEncoder passwordEncoder) {
-//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-//        authenticationProvider.setUserDetailsService(myUserDetailsService);
-//        authenticationProvider.setPasswordEncoder(passwordEncoder);
-//
-//        ProviderManager providerManager = new ProviderManager(authenticationProvider);
-//        return providerManager;
-//
-//    }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**","/user", "/admin/**"))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/api/posts").permitAll()
+                        .requestMatchers("/user").permitAll()
+                        .requestMatchers("/admin/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 //.userDetailsService(myUserDetailsService)

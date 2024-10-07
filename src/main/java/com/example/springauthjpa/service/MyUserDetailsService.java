@@ -7,6 +7,7 @@ import com.example.springauthjpa.repository.GroupRepository;
 import com.example.springauthjpa.repository.UserRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,8 +31,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class MyUserDetailsService implements UserDetailsService {
-//    private PasswordEncoder encoder;
-//    private AuthenticationManager authenticationManager;
+    private PasswordEncoder encoder;
+    private AuthenticationManager authenticationManager;
 
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
@@ -40,7 +41,8 @@ public class MyUserDetailsService implements UserDetailsService {
 
     protected final Log logger = LogFactory.getLog(getClass());
 
-    public MyUserDetailsService(UserRepository userRepository, GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, GroupAuthorityRepository groupAuthorityRepository) {
+    public MyUserDetailsService(PasswordEncoder encoder, UserRepository userRepository, GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, GroupAuthorityRepository groupAuthorityRepository) {
+        this.encoder = encoder;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
@@ -74,15 +76,19 @@ public class MyUserDetailsService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public void updateUser(User user) {
+    public void updateUser(User newUser) {
         // Not include Username change
-        Long userId = findUserId(user.getUsername());
-        user.setId(userId);
+        User user = userRepository.findByUsername(newUser.getUsername()).get();
+        user.setFirstname(newUser.getFirstname());
+        user.setLastname(newUser.getLastname());
+        user.setEmail(newUser.getEmail());
         userRepository.save(user);
     }
 
-    public void deleteUser(final User user) {
-        userRepository.delete(user);
+    public void deleteUser(final String username) {
+        Long userId = findUserId(username);
+        groupMemberRepository.deleteByUserId(userId);
+        userRepository.deleteById(userId);
     }
 
     public void changePassword(String oldPassword, String newPassword) throws AuthenticationException {
@@ -95,18 +101,18 @@ public class MyUserDetailsService implements UserDetailsService {
         String username = currentUser.getName();
         // If an authentication manager has been set, re-authenticate the user with the
         // supplied password.
-//        if (this.authenticationManager != null) {
-//            this.logger.debug(LogMessage.format("Reauthenticating user '%s' for password change request.", username));
-//            this.authenticationManager
-//                    .authenticate(UsernamePasswordAuthenticationToken.unauthenticated(username, oldPassword));
-//        }
-//        else {
-//            this.logger.debug("No authentication manager set. Password won't be re-checked.");
-//        }
-//
-//        User user = userRepository.findByUsername(username).get();
-//        user.setPassword(encoder.encode(newPassword));
-//        userRepository.save(user);
+        if (this.authenticationManager != null) {
+            this.logger.debug(LogMessage.format("Reauthenticating user '%s' for password change request.", username));
+            this.authenticationManager
+                    .authenticate(UsernamePasswordAuthenticationToken.unauthenticated(username, oldPassword));
+        }
+        else {
+            this.logger.debug("No authentication manager set. Password won't be re-checked.");
+        }
+
+        User user = userRepository.findByUsername(username).get();
+        user.setPassword(encoder.encode(newPassword));
+        userRepository.save(user);
 
         Authentication authentication = createNewAuthentication(currentUser, newPassword);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -182,8 +188,7 @@ public class MyUserDetailsService implements UserDetailsService {
         Long userId = findUserId(username);
         Long groupId = findGroupId(groupName);
 
-        Optional<GroupMember> groupMember = groupMemberRepository.findByUserIdAndGroupId(userId, groupId);
-        groupMemberRepository.delete(groupMember.get());
+        groupMemberRepository.deleteByUserIdAndGroupId(userId, groupId);
     }
 
     public List<GrantedAuthority> findGroupAuthorities(String groupName) {
@@ -196,15 +201,14 @@ public class MyUserDetailsService implements UserDetailsService {
                 .collect(Collectors.toList());
     }
 
-    public void removeGroupAuthority(String groupName, final GrantedAuthority authority) {
+    public void removeGroupAuthority(String groupName, final String authorityName) {
         Long groupId = findGroupId(groupName);
-        String authorityName = authority.getAuthority();
-        groupAuthorityRepository.deleteByGroupIdAndAuthority(groupId, authorityName);
+        groupAuthorityRepository.deleteByGroupIdAndAuthority(groupId, ("ROLE_" + authorityName).toUpperCase());
     }
 
-    public void addGroupAuthority(final String groupName, final GrantedAuthority authority) {
+    public void addGroupAuthority(final String groupName, final String authorityName) {
         Long groupId = findGroupId(groupName);
-        GroupAuthority groupAuthority = new GroupAuthority(groupId, authority.getAuthority());
+        GroupAuthority groupAuthority = new GroupAuthority(groupId, ("ROLE_" + authorityName).toUpperCase());
         groupAuthorityRepository.save(groupAuthority);
     }
 
@@ -220,6 +224,10 @@ public class MyUserDetailsService implements UserDetailsService {
                 .findByUsername(username)
                 .map(User::getId)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
+    }
+
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
     }
 
 }

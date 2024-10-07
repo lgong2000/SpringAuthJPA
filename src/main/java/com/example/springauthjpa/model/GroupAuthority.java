@@ -24,6 +24,14 @@ public class GroupAuthority {
         this.authority = authority;
     }
 
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
     public String getAuthority() {
         return authority;
     }

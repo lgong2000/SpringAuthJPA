@@ -49,7 +49,7 @@ public class SpringAuthJpaApplication {
                     true, false, false, false);
             myUserDetailsService.createUser(user2);
 
-            myUserDetailsService.deleteUser(user);
+            myUserDetailsService.deleteUser(user.getUsername());
             myUserDetailsService.createUser(user);
 
             myUserDetailsService.addUserToGroup("user", "Users");
